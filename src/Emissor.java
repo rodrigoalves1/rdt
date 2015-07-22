@@ -21,7 +21,7 @@ public class Emissor {
 	public static final double PROBABILITY = 1;
 
 	// Janela de envio - numero de pacotes que podem ser enviados sem o recebmento de um ack
-	public static final int JANELA = 10;
+	public static final int JANELA = 30;
 	
 	// Tempo em milisegundos para estouro do timer e reenvio dos pacotes sem ack
 	public static final int TIMER = 300;
@@ -62,7 +62,7 @@ public class Emissor {
 		DatagramSocket toReceiver = new DatagramSocket();
 
 		// Endereço de quem irá receber o arquivo
-		InetAddress receiverAddress = InetAddress.getByName("localhost");
+		InetAddress receiverAddress = InetAddress.getByName("192.168.25.10");
 		
 		// Lista para armazenar os pacotes enviados
 		ArrayList<Pacote> sent = new ArrayList<Pacote>();
@@ -178,7 +178,7 @@ public class Emissor {
 		DatagramSocket fromSender = new DatagramSocket(9876);
 		
 		// 83 é o tamanho base (em bytes) do Pacote (inclui outros cabeçalhos)
-		byte[] receivedData = new byte[Emissor.MSS + 91];
+		byte[] receivedData = new byte[4000 + 91];
 
 		// Número de sequência do pacote o qual está esperando (inicialmente 0)
 		int waitingFor = 0;
