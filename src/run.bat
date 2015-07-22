@@ -1,0 +1,1 @@
+"C:\Program Files\Java\jdk1.8.0_25\bin\javac" %1 %2 %3 %4 %5 %6 %7 %8 %9
