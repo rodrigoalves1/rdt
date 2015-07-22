@@ -16,10 +16,10 @@ public class Receptor{
 	// Probabilidade de perda do ACK
 	public static final double PROBABILITY = 1;
 	// Maximum Segment Size - Quantidade de dados da camada de aplicação no segmento
-	public static final int MSS = 400;
+	public static final int MSS = 4000;
 
 	// Janela de envio - numero de pacotes que podem ser enviados sem o recebmento de um ack
-	public static final int JANELA = 10;
+	public static final int JANELA = 30;
 	
 	// Tempo em milisegundos para estouro do timer e reenvio dos pacotes sem ack
 	public static final int TIMER = 300;
@@ -158,7 +158,7 @@ public class Receptor{
 			httpa = httpa.substring(5,i);
 			System.out.println("FILE NAME ---- "+httpa);
 		//localizando arquivo no computador
-		File file = new File("projeto.pdf");
+		File file = new File(httpa);
 		//lendo os bytes do arquivo 
 		FileInputStream fis = new FileInputStream(file);
 		fileBytes = new byte[(int) file.length()];
@@ -177,7 +177,7 @@ public class Receptor{
 		DatagramSocket toReceiver = new DatagramSocket();
 
 		// Endereço de quem irá receber o arquivo
-		InetAddress receiverAddress = InetAddress.getByName("localhost");
+		InetAddress receiverAddress = InetAddress.getByName("192.168.25.9");
 		
 		// Lista para armazenar os pacotes enviados
 		ArrayList<Pacote> sent = new ArrayList<Pacote>();
