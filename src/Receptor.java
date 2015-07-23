@@ -12,7 +12,8 @@ import java.util.Arrays;
 
 
 public class Receptor{
-
+	String destinationIP = "";
+	static DatagramPacket receivedPacket = null;
 	// Probabilidade de perda do ACK
 	public static final double PROBABILITY = 1;
 	// Maximum Segment Size - Quantidade de dados da camada de aplicação no segmento
@@ -46,7 +47,7 @@ public class Receptor{
 			System.out.println("Esperando pacotes");
 
 			// Cria datagrama e recebe pacote
-			DatagramPacket receivedPacket = new DatagramPacket(receivedData, receivedData.length);
+			 receivedPacket = new DatagramPacket(receivedData, receivedData.length);
 			fromSender.receive(receivedPacket);
 
 			// Transformar os bytes recebidos do pacote em um objeto manipulável
@@ -62,7 +63,7 @@ public class Receptor{
 				
 				// Adicionar o pacote ao buffer
 				received.add(packet);
-
+				
 				System.out.println("Último pacote recebido");
 				
 				// Fim de transmissão
@@ -118,7 +119,7 @@ public class Receptor{
 			}
 		}
 		
-		enviar(httpRequest);
+		enviar(httpRequest,receivedPacket.getAddress(),receivedPacket.getPort());
 		System.out.println(httpRequest);
 		
 		
@@ -128,7 +129,7 @@ public class Receptor{
 
 	
 	
-	public static void enviar(String httpa) throws ClassNotFoundException, IOException{//Modulo para gerar numero randomico 
+	public static void enviar(String httpa,InetAddress destinationIP,int destinationPort) throws ClassNotFoundException, IOException{//Modulo para gerar numero randomico 
 		ModuloDescarte md = new ModuloDescarte();
 		boolean isfile = false;
 		// Numero de sequência do ultimo pacote enviado mas nao reconhecido 
@@ -138,15 +139,7 @@ public class Receptor{
 		int waitingForAck = 0;
 
 		// Bytes a serem enviados
-		String http  = "GET /projeto.pdf HTTP/1.1\r\n"+
-							"Host: localhost:6788\r\n"+
-							"Connection: keep-alive\r\n"+
-							"Cache-Control: max-age=0\r\n"+
-							"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n"+
-							"User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36\r\n"+
-							"Accept-Encoding: gzip, deflate, sdch\r\n"+
-							"Accept-Language: en-US,en;q=0.8\r\n"+
-							"/projeto.pdf\r\n\r\n";
+		String http  = "!";
 		byte[] fileBytes = http.getBytes();		
 		
 		if(!httpa.equals("")){
@@ -177,7 +170,7 @@ public class Receptor{
 		DatagramSocket toReceiver = new DatagramSocket();
 
 		// Endereço de quem irá receber o arquivo
-		InetAddress receiverAddress = InetAddress.getByName("192.168.25.9");
+		InetAddress receiverAddress = destinationIP;
 		
 		// Lista para armazenar os pacotes enviados
 		ArrayList<Pacote> sent = new ArrayList<Pacote>();
@@ -200,7 +193,7 @@ public class Receptor{
 				byte[] sendData = Serializer.toBytes(rdtPacketObject);
 
 				// Cria o pacote UDP com os dados, endereço receptor e porta receptor
-				DatagramPacket packet = new DatagramPacket(sendData, sendData.length, receiverAddress, 9876 );
+				DatagramPacket packet = new DatagramPacket(sendData, sendData.length, receiverAddress, destinationPort );
 
 				System.out.println("Enviando pacote com número de sequência " + rcvBase +  " e tamanho " + sendData.length + " bytes");
 
@@ -255,12 +248,11 @@ public class Receptor{
 					try {
 						sendData = Serializer.toBytes(sent.get(i));
 					} catch (IOException e2) {
-						// TODO Auto-generated catch block
 						e2.printStackTrace();
 					}
 
 					// Cria o pacote igual a anteriormente
-					DatagramPacket packet = new DatagramPacket(sendData, sendData.length, receiverAddress, 9876 );
+					DatagramPacket packet = new DatagramPacket(sendData, sendData.length, receiverAddress, destinationPort );
 					
 					// Envia o pacote de acordo com a probabilidade de perda
 					if(md.gerarRandom() > PROBABILITY){
