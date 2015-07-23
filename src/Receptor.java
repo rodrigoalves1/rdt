@@ -12,7 +12,6 @@ import java.util.Arrays;
 
 
 public class Receptor{
-	String destinationIP = "";
 	static DatagramPacket receivedPacket = null;
 	// Probabilidade de perda do ACK
 	public static final double PROBABILITY = 1;
@@ -48,13 +47,16 @@ public class Receptor{
 
 			// Cria datagrama e recebe pacote
 			 receivedPacket = new DatagramPacket(receivedData, receivedData.length);
+			 
+			 
+			 
 			fromSender.receive(receivedPacket);
 
 			// Transformar os bytes recebidos do pacote em um objeto manipulável
 			Pacote packet = (Pacote) Serializer.toObject(receivedPacket.getData());
 			
 			System.out.println("Pacote com número de sequência " + packet.getSeq() + " recebido (último? " + (packet.isLast() ? "Sim":"Não") + " )");
-
+			System.out.println("RECEBENDO PACOTES DE: " + receivedPacket.getAddress() + " " +receivedPacket.getPort());
 			// Se o pacote recebido for o esperado e for o último da transmissão,
 			if(packet.getSeq() == waitingFor && packet.isLast()){
 				
@@ -113,14 +115,11 @@ public class Receptor{
 		for(Pacote p : received){
 			for(byte b: p.getData()){
 				httpRequest+=(char)b;
-				
-					
-				
 			}
 		}
-		
-		enviar(httpRequest,receivedPacket.getAddress(),receivedPacket.getPort());
 		System.out.println(httpRequest);
+		enviar(httpRequest,receivedPacket);
+		
 		
 		
 
@@ -129,9 +128,11 @@ public class Receptor{
 
 	
 	
-	public static void enviar(String httpa,InetAddress destinationIP,int destinationPort) throws ClassNotFoundException, IOException{//Modulo para gerar numero randomico 
+	public static void enviar(String httpa,DatagramPacket destination) throws ClassNotFoundException, IOException{//Modulo para gerar numero randomico 
 		ModuloDescarte md = new ModuloDescarte();
 		boolean isfile = false;
+		
+		System.out.println(destination.getAddress() + " -- "+ destination.getPort());
 		// Numero de sequência do ultimo pacote enviado mas nao reconhecido 
 		int rcvBase = 0;
 		
@@ -145,7 +146,7 @@ public class Receptor{
 		if(!httpa.equals("")){
 			String fileName = "";
 			int i = 5;
-			while (http.charAt(i) !=  ' ') {
+			while (httpa.charAt(i) !=  ' ') {
 				i++;
 			}
 			httpa = httpa.substring(5,i);
@@ -170,7 +171,7 @@ public class Receptor{
 		DatagramSocket toReceiver = new DatagramSocket();
 
 		// Endereço de quem irá receber o arquivo
-		InetAddress receiverAddress = destinationIP;
+		InetAddress receiverAddress = destination.getAddress();
 		
 		// Lista para armazenar os pacotes enviados
 		ArrayList<Pacote> sent = new ArrayList<Pacote>();
@@ -193,7 +194,7 @@ public class Receptor{
 				byte[] sendData = Serializer.toBytes(rdtPacketObject);
 
 				// Cria o pacote UDP com os dados, endereço receptor e porta receptor
-				DatagramPacket packet = new DatagramPacket(sendData, sendData.length, receiverAddress, destinationPort );
+				DatagramPacket packet = new DatagramPacket(sendData, sendData.length, destination.getAddress(), 9876);
 
 				System.out.println("Enviando pacote com número de sequência " + rcvBase +  " e tamanho " + sendData.length + " bytes");
 
@@ -252,7 +253,7 @@ public class Receptor{
 					}
 
 					// Cria o pacote igual a anteriormente
-					DatagramPacket packet = new DatagramPacket(sendData, sendData.length, receiverAddress, destinationPort );
+					DatagramPacket packet = new DatagramPacket(sendData, sendData.length, destination.getAddress(), 9876 );
 					
 					// Envia o pacote de acordo com a probabilidade de perda
 					if(md.gerarRandom() > PROBABILITY){
